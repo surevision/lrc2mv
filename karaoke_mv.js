@@ -184,11 +184,12 @@ class LRCParser {
 }
 
 class KaraokeMVGenerator {
-    constructor(mp3File, lrcFile, pngFile, outputFile) {
+    constructor(mp3File, lrcFile, pngFile, outputFile, audio2File = null) {
         this.mp3File = mp3File;
         this.lrcFile = lrcFile;
         this.pngFile = pngFile;
         this.outputFile = outputFile;
+        this.audio2File = audio2File;
         this.parser = new LRCParser(lrcFile);
         this.tempDir = resolve(join(__dirname, 'temp'));
         
@@ -407,16 +408,33 @@ async generate() {
 
     const assFilter = `ass=${karaokeFile}`.replace(/\\/g, '/').replace(/:/g, '\\\\:');
 
-    await this._runFFmpeg([
+    const ffmpegArgs2 = [
       '-y',
-      '-i', outputVideo,
-      '-vf', assFilter,
-      '-c:a', 'copy',
+      '-i', outputVideo
+    ];
+    
+    if (this.audio2File) {
+      ffmpegArgs2.push('-i', this.audio2File);
+    }
+
+      ffmpegArgs2.push(
+      '-filter_complex', `[0:v]${assFilter}[outv]`,
+      '-map', '[outv]',
       '-c:v', 'libx264',
-      '-preset', 'fast',
-      '-crf', '23',
-      finalOutput
-    ], '正在添加歌词...');
+      '-tune', 'stillimage',
+      '-threads', '2'
+    );
+
+
+    if (this.audio2File) {
+      ffmpegArgs2.push('-map', '0:a', '-map', '1:a', '-c:a', 'copy');
+    } else {
+      ffmpegArgs2.push('-map', '0:a', '-c:a', 'copy');
+    }
+
+    ffmpegArgs2.push(finalOutput);
+
+    await this._runFFmpeg(ffmpegArgs2, '正在添加歌词...');
 
     const fs = await import('fs');
     fs.renameSync(finalOutput, this.outputFile);
@@ -471,7 +489,8 @@ program
   .argument('<lrc>', 'LRC歌词文件路径')
   .argument('<png>', 'PNG封面图片文件路径')
   .argument('<output>', '输出视频文件路径')
-  .action(async (mp3, lrc, png, output) => {
+  .option('-a, --audio2 <file>', '第二音轨MP3文件路径（可选）')
+  .action(async (mp3, lrc, png, output, options) => {
     if (!existsSync(mp3)) {
       console.error(`错误: MP3文件不存在: ${mp3}`);
       process.exit(1);
@@ -487,7 +506,12 @@ program
       process.exit(1);
     }
 
-    const generator = new KaraokeMVGenerator(mp3, lrc, png, output);
+    if (options.audio2 && !existsSync(options.audio2)) {
+      console.error(`错误: 第二音轨MP3文件不存在: ${options.audio2}`);
+      process.exit(1);
+    }
+
+    const generator = new KaraokeMVGenerator(mp3, lrc, png, output, options.audio2);
     await generator.generate();
   });
 
