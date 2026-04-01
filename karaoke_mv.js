@@ -184,10 +184,10 @@ class LRCParser {
 }
 
 class KaraokeMVGenerator {
-    constructor(mp3File, lrcFile, pngFile, outputFile, audio2File = null) {
+    constructor(mp3File, lrcFile, picFile, outputFile, audio2File = null) {
         this.mp3File = mp3File;
         this.lrcFile = lrcFile;
-        this.pngFile = pngFile;
+        this.picFile = picFile;
         this.outputFile = outputFile;
         this.audio2File = audio2File;
         this.parser = new LRCParser(lrcFile);
@@ -390,7 +390,7 @@ async generate() {
     await this._runFFmpeg([
       '-y',
       '-loop', '1',
-      '-i', this.pngFile,
+      '-i', this.picFile,
       '-i', this.mp3File,
       '-vf', 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2',
       '-c:v', 'libx264',
@@ -421,8 +421,7 @@ async generate() {
       '-filter_complex', `[0:v]${assFilter}[outv]`,
       '-map', '[outv]',
       '-c:v', 'libx264',
-      '-tune', 'stillimage',
-      '-threads', '2'
+      '-tune', 'stillimage'
     );
 
 
@@ -487,10 +486,10 @@ program
   .description('生成老式卡拉OK风格MV')
   .argument('<mp3>', 'MP3音频文件路径')
   .argument('<lrc>', 'LRC歌词文件路径')
-  .argument('<png>', 'PNG封面图片文件路径')
+  .argument('<pic>', '封面图片文件路径')
   .argument('<output>', '输出视频文件路径')
   .option('-a, --audio2 <file>', '第二音轨MP3文件路径（可选）')
-  .action(async (mp3, lrc, png, output, options) => {
+  .action(async (mp3, lrc, pic, output, options) => {
     if (!existsSync(mp3)) {
       console.error(`错误: MP3文件不存在: ${mp3}`);
       process.exit(1);
@@ -501,8 +500,8 @@ program
       process.exit(1);
     }
 
-    if (!existsSync(png)) {
-      console.error(`错误: PNG文件不存在: ${png}`);
+    if (!existsSync(pic)) {
+      console.error(`错误: 封面图片文件不存在: ${pic}`);
       process.exit(1);
     }
 
@@ -511,7 +510,7 @@ program
       process.exit(1);
     }
 
-    const generator = new KaraokeMVGenerator(mp3, lrc, png, output, options.audio2);
+    const generator = new KaraokeMVGenerator(mp3, lrc, pic, output, options.audio2);
     await generator.generate();
   });
 
