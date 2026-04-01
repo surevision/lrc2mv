@@ -1,0 +1,26 @@
+{
+  "name": "karaoke-mv-generator",
+  "version": "1.0.0",
+  "description": "生成老式卡拉OK风格MV",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "karaoke",
+    "mv",
+    "ffmpeg",
+    "lrc",
+    "ass"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
