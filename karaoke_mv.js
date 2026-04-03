@@ -63,7 +63,7 @@ class LRCParser {
             }
 
             // 增强LRC格式解析 (后缀名是.lrc但内容是逐字歌词)
-            const enhancedLRCRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]((?:<\d{2}:\d{2}\.\d{3}>[^<]*)+)/;
+            const enhancedLRCRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]((?:<\d{2}:\d{2}\.\d{2,3}>[^<]*)+)/;
             const enhancedLRCMatch = enhancedLRCRegex.exec(trimmedLine);
 
             if (enhancedLRCMatch) {
@@ -72,7 +72,7 @@ class LRCParser {
                 const lineTimeMs = parseInt(minutes) * 60000 + parseInt(seconds) * 1000 + parseInt(milliseconds.padEnd(3, '0').slice(0, 3));
 
                 const chars = [];
-                const charRegex = /<(\d{2}):(\d{2})\.(\d{3})>([^<]*)/g;
+                const charRegex = /<(\d{2}):(\d{2})\.(\d{2,3})>([^<]*)/g;
                 let charMatch;
                 const charTimes = [];
 
@@ -110,13 +110,13 @@ class LRCParser {
 
             // KRC 格式解析
             if (this.isKRC) {
-                const krcRegex = /\[(\d{2}):(\d{2})\.(\d{2})\]((?:<\d{2}:\d{2}\.\d{2}>[^<]*)+)/;
+                const krcRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]((?:<\d{2}:\d{2}\.\d{2,3}>[^<]*)+)/;
                 const krcMatch = krcRegex.exec(trimmedLine);
                 const [, minutes, seconds, milliseconds, charText] = krcMatch;
                 const lineTimeMs = parseInt(minutes) * 60000 + parseInt(seconds) * 1000 + parseInt(milliseconds.padEnd(3, '0').slice(0, 3));
 
                 const chars = [];
-                const charRegex = /<(\d{2}):(\d{2})\.(\d{2})>([^<]*)/g;
+                const charRegex = /<(\d{2}):(\d{2})\.(\d{2,3})>([^<]*)/g;
                 let charMatch;
                 let lastEndTime = lineTimeMs;
 
