@@ -228,7 +228,7 @@ class KaraokeMVGenerator {
         });
     }
 
-    _createKaraokeASS() {
+    _createKaraokeASS(audioDuration) {
         const karaokeFile = join(this.tempDir, 'karaoke.ass');
         
         const assContent = `[Script Info]
@@ -267,9 +267,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             if (i + 2 < lyrics.length) {
                 nextPairStartTime = lyrics[i + 2].time / 1000;
             } else if (i + 1 < lyrics.length) {
-                nextPairStartTime = lyrics[i + 1].time / 1000 + 5;
+                nextPairStartTime = Math.max(lyrics[i + 1].time / 1000, audioDuration);
             } else {
-                nextPairStartTime = startTime + 5;
+                nextPairStartTime = audioDuration;
             }
 
             // 第一句
@@ -403,7 +403,7 @@ async generate() {
       outputVideo
     ], '正在合成基础视频...');
 
-    const karaokeFile = this._createKaraokeASS();
+    const karaokeFile = this._createKaraokeASS(audioDuration);
     const finalOutput = join(this.tempDir, 'final.mp4');
 
     const assFilter = `ass=${karaokeFile}`.replace(/\\/g, '/').replace(/:/g, '\\\\:');
