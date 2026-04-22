@@ -5,33 +5,70 @@
 ## 环境要求
 
 - Node.js 18+
-- FFmpeg 和 FFprobe (需加入PATH环境变量)
+- Python 3（用于remove_vocal.py）
+- FFmpeg 和 FFprobe（需加入PATH环境变量）
 
 ## 安装依赖
 
 ```bash
 npm install
+pip install requests
 ```
+
+## 脚本说明
+
+| 脚本 | 说明 |
+|------|------|
+| karaoke_mv.js | 单个MP3生成MV |
+| karaoke_mv_folder.js | 批量文件夹生成MV |
+| remove_vocal.py | 调用API去除人声 |
+| wav2mp3.js | WAV转MP3 |
+| lxmusic.js | LX Music歌词下载 |
+| kugou_krc.js | 酷狗歌词下载 |
 
 ## 使用方法
 
+### 单个MP3生成MV
+
 ```bash
-# 基本用法
 node karaoke_mv.js <mp3> <lrc> <pic> <output>
 
-# 包含第二音轨（伴奏，可通过 https://github.com/jianchang512/vocal-separate 项目分离人声生成）
+# 包含第二音轨（伴奏）
 node karaoke_mv.js song.mp3 song.lrc cover.png output.mp4 -a backing.mp3
 ```
 
-### 参数说明
+### 批量文件夹生成MV
 
-| 参数 | 说明 |
-|------|------|
-| mp3 | 音频文件路径 |
-| lrc | 歌词文件路径（支持多种格式） |
-| pic | 封面图片路径 |
-| output | 输出视频路径 |
-| -a, --audio2 | 第二音轨MP3文件（可选） |
+```bash
+node karaoke_mv_folder.js <folder>
+```
+
+自动处理文件夹下所有不含`off_vocal`的MP3文件，匹配规则：
+- 歌词：同名.lrc/.krc/.lxlrc
+- 封面：同名.png/.jpg/.jpeg
+- 无人声：同名_off_vocal.mp3
+- 通用封面：脚本目录下的commonbg.png
+
+### 去除人声
+
+```bash
+# 单个文件
+python remove_vocal.py input.mp3
+
+# 多个文件
+python remove_vocal.py file1.mp3 file2.mp3
+
+# 文件夹（处理所有不含off_vocal的mp3）
+python remove_vocal.py folder/
+```
+
+接口需运行 https://github.com/jianchang512/vocal-separate
+
+### WAV转MP3
+
+```bash
+node wav2mp3.js input.wav output.mp3
+```
 
 ## 支持的歌词格式
 
@@ -58,41 +95,29 @@ node karaoke_mv.js song.mp3 song.lrc cover.png output.mp4 -a backing.mp3
 ```
 [00:16.92]<00:00.000>歌<00:00.400>词<00:00.800>内<00:01.200>容
 ```
-## 下载歌词
 
-### 洛雪音乐
+## 输出效果
 
-洛雪音乐开启本地开放API后通过接口获取
+- **Preview样式**: 白色底色文字，用于显示即将演唱的歌词
+- **Karaoke样式**: 渐变填充文字（白色→黄色），逐字高亮显示
 
-```bash
-node lxmusic.js output.lxlrc
-```
+歌词显示位置：
+- 左下角 (250, 780) - 第一、三句
+- 右下角 (1660, 880) - 第二、四句
 
-### 酷狗
-```bash
-node kugou_krc.js "歌手" "歌名" output.krc
-```
-
-### 增强LRC格式
-
-可通过 https://github.com/chenmozhijin/LDDC 搜索下载
-
-## 示例
-
-```bash
-# 生成基础MV
-node karaoke_mv.js test.mp3 test.lxlrc cover.png output.mp4
-
-# 生成带伴奏的MV
-node karaoke_mv.js test.mp3 test.lxlrc cover.png output.mp4 -a backing.mp3
-```
+一次显示两句歌词，下一对歌词在当前对消失时出现。
 
 ## 项目结构
 
 ```
 .
-├── karaoke_mv.js    # 主程序
-├── lxmusic.js       # LX Music歌词下载
-├── kugou_krc.js     # 酷狗歌词下载
-├── package.json     # 依赖配置
+├── karaoke_mv.js          # 单个MP3生成MV
+├── karaoke_mv_folder.js   # 批量文件夹生成MV
+├── remove_vocal.py       # 去除人声
+├── wav2mp3.js            # WAV转MP3
+├── lxmusic.js           # LX Music歌词下载
+├── kugou_krc.js         # 酷狗歌词下载
+├── commonbg.png         # 通用背景图（可选）
+├── package.json         # Node.js依赖
+└── README.md           # 说明文档
 ```
